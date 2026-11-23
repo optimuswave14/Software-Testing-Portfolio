@@ -1,0 +1,32 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f4f6fa; color: #202938; font-family: Arial, sans-serif; }
+.app-shell { max-width: 1100px; margin: 0 auto; padding: 24px; }
+header { background: #172554; color: white; padding: 24px 28px; border-radius: 14px; }
+header h1 { margin: 0 0 6px; } header p { margin: 0; opacity: .8; }
+nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 24px; }
+button { border: 1px solid #d5dbe5; background: white; color: #253047; padding: 9px 13px; border-radius: 7px; cursor: pointer; }
+nav button.active, .primary { background: #2563eb; color: white; border-color: #2563eb; }
+main { min-height: 420px; } h2 { margin-top: 0; } h3 { margin-top: 28px; }
+.muted, small { color: #687386; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+.stats article, .panel { background: white; border: 1px solid #e1e6ee; border-radius: 10px; padding: 18px; }
+.stats article { display: flex; flex-direction: column; gap: 10px; }
+.stats span { color: #687386; font-size: 14px; } .stats strong { font-size: 23px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 18px 0; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+input, select { width: 100%; padding: 10px; border: 1px solid #cfd6e2; border-radius: 7px; background: white; font: inherit; }
+.form-actions { display: flex; gap: 8px; align-items: end; }
+.table-wrap { overflow-x: auto; background: white; border-radius: 10px; border: 1px solid #e1e6ee; }
+table { width: 100%; border-collapse: collapse; min-width: 650px; }
+th, td { padding: 12px; border-bottom: 1px solid #edf0f4; text-align: left; font-size: 14px; }
+th { background: #f8fafc; }
+.danger { color: #b42318; } .error { color: #b42318; background: #fff1f0; padding: 10px; border-radius: 7px; }
+.budget-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.budget-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.progress { height: 9px; border-radius: 10px; background: #e8edf5; overflow: hidden; margin: 10px 0; }
+.progress span { display: block; height: 100%; background: #2563eb; }
+.month-picker { max-width: 220px; margin: 16px 0; }
+.category-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #edf0f4; }
+.category-row:last-child { border-bottom: 0; }
+footer { color: #7a8494; text-align: center; font-size: 13px; padding: 30px 0 10px; }
+@media (max-width: 650px) { .app-shell { padding: 14px; } .stats, .form-grid, .budget-list { grid-template-columns: 1fr; } }
