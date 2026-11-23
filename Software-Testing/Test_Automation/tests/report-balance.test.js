@@ -1,14 +1,12 @@
 
-const { Builder, By, until } = require("selenium-webdriver");
+const { Builder } = require("selenium-webdriver");
 const assert = require("assert");
 
-function extractAmount(text) {
-  const match = text.match(/-?[\d,]+(?:\.\d+)?/);
-
-  assert.ok(match, "Could not extract amount from: " + text);
-
-  return Number(match[0].replace(/,/g, ""));
-}
+const {
+  openReportsPage,
+  getReportCard,
+  extractAmount
+} = require("./helpers/test-helpers");
 
 async function testReportBalance() {
   const driver = await new Builder().forBrowser("chrome").build();
@@ -17,32 +15,11 @@ async function testReportBalance() {
     await driver.get("http://localhost:3001");
     console.log("Finance Tracker opened");
 
-    await driver.findElement(
-      By.xpath("//*[self::button or self::a][normalize-space()='Reports']")
-    ).click();
+    await openReportsPage(driver);
 
-    await driver.wait(
-      until.elementLocated(By.css(".stats")),
-      15000
-    );
-
-    await driver.wait(async () => {
-      return (await driver.findElements(
-        By.xpath("//p[normalize-space()='Loading report...']")
-      )).length === 0;
-    }, 15000);
-
-    const incomeCard = await driver.findElement(
-      By.xpath("//article[.//span[normalize-space()='Income']]")
-    );
-
-    const expensesCard = await driver.findElement(
-      By.xpath("//article[.//span[normalize-space()='Expenses']]")
-    );
-
-    const balanceCard = await driver.findElement(
-      By.xpath("//article[.//span[normalize-space()='Net balance']]")
-    );
+    const incomeCard = await getReportCard(driver, "Income");
+    const expensesCard = await getReportCard(driver, "Expenses");
+    const balanceCard = await getReportCard(driver, "Net balance");
 
     const income = extractAmount(await incomeCard.getText());
     const expenses = extractAmount(await expensesCard.getText());
@@ -65,6 +42,7 @@ async function testReportBalance() {
   } catch (error) {
     console.log("AT-22 FAILED:", error.message);
     process.exitCode = 1;
+
   } finally {
     await driver.quit();
   }

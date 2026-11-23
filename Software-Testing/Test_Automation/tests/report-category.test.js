@@ -1,6 +1,10 @@
 
-const { Builder, By, until } = require("selenium-webdriver");
+const { Builder, By } = require("selenium-webdriver");
 const assert = require("assert");
+
+const {
+  openReportsPage
+} = require("./helpers/test-helpers");
 
 async function testReportCategory() {
   const driver = await new Builder().forBrowser("chrome").build();
@@ -9,20 +13,7 @@ async function testReportCategory() {
     await driver.get("http://localhost:3001");
     console.log("Finance Tracker opened");
 
-    await driver.findElement(
-      By.xpath("//*[self::button or self::a][normalize-space()='Reports']")
-    ).click();
-
-    await driver.wait(
-      until.elementLocated(By.css(".stats")),
-      15000
-    );
-
-    await driver.wait(async () => {
-      return (await driver.findElements(
-        By.xpath("//p[normalize-space()='Loading report...']")
-      )).length === 0;
-    }, 15000);
+    await openReportsPage(driver);
 
     // Verify category heading
     const categoryHeading = await driver.findElement(
@@ -34,7 +25,7 @@ async function testReportCategory() {
       "Expenses by category heading is not displayed"
     );
 
-    // Check whether category rows or empty message are displayed
+    // Check category rows or empty message
     const categoryRows = await driver.findElements(
       By.css(".category-row")
     );
@@ -75,6 +66,7 @@ async function testReportCategory() {
   } catch (error) {
     console.log("AT-24 FAILED:", error.message);
     process.exitCode = 1;
+
   } finally {
     await driver.quit();
   }

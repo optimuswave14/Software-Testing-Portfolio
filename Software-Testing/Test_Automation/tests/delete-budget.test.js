@@ -2,60 +2,33 @@
 const { Builder, By, until } = require("selenium-webdriver");
 const assert = require("assert");
 
+const {
+  openBudgetsPage,
+  getBudgetMonth,
+  saveMonthlyBudget,
+  getBudgetCard
+} = require("./helpers/test-helpers");
+
 async function testDeleteBudget() {
   const driver = await new Builder().forBrowser("chrome").build();
 
   try {
     await driver.get("http://localhost:3001");
-    console.log("Finance Tracker opened");
+    await openBudgetsPage(driver);
 
-    // Navigate to Budgets
-    await driver.findElement(
-      By.xpath("//*[self::button or self::a][normalize-space()='Budgets']")
-    ).click();
-
-    await driver.wait(
-      until.elementLocated(
-        By.xpath("//h2[normalize-space()='Monthly Budgets']")
-      ),
-      10000
-    );
-
-    // Read the current month
-    const month = await driver.findElement(
-      By.xpath("//label[contains(.,'Month')]/input")
-    ).getAttribute("value");
+    const month = await getBudgetMonth(driver);
 
     // Create a budget specifically for this test
-    await driver.findElement(
-      By.xpath("//label[contains(.,'Category')]/select")
-    ).sendKeys("Food");
-
-    const limit = await driver.findElement(
-      By.xpath("//label[contains(.,'Budget limit')]/input")
-    );
-
-    await limit.clear();
-    await limit.sendKeys("75000");
-
-    await driver.findElement(
-      By.xpath("//button[normalize-space()='Save budget']")
-    ).click();
+    await saveMonthlyBudget(driver, "Food", "75000");
 
     // Locate the Food budget for the current month
-    const budgetCardXPath =
-      `//article[.//strong[normalize-space()='Food · ${month}']]`;
-
-    await driver.wait(
-      until.elementLocated(By.xpath(budgetCardXPath)),
-      10000
-    );
+    const budgetCard = await getBudgetCard(driver, "Food", month);
 
     console.log("Food budget found");
 
-    // Locate the Delete button inside that budget card
-    const deleteButton = await driver.findElement(
-      By.xpath(`${budgetCardXPath}//button[normalize-space()='Delete']`)
+    // Locate the Delete button inside the budget card
+    const deleteButton = await budgetCard.findElement(
+      By.xpath(".//button[normalize-space()='Delete']")
     );
 
     await deleteButton.click();
@@ -63,14 +36,19 @@ async function testDeleteBudget() {
     // Wait until the budget card is removed
     await driver.wait(async () => {
       const cards = await driver.findElements(
-        By.xpath(budgetCardXPath)
+        By.xpath(
+          `//article[.//strong[normalize-space()=${JSON.stringify(`Food · ${month}`)}]]`
+        )
       );
+
       return cards.length === 0;
     }, 10000);
 
     // Verify that the budget no longer exists
     const remainingCards = await driver.findElements(
-      By.xpath(budgetCardXPath)
+      By.xpath(
+        `//article[.//strong[normalize-space()=${JSON.stringify(`Food · ${month}`)}]]`
+      )
     );
 
     assert.strictEqual(
@@ -84,6 +62,7 @@ async function testDeleteBudget() {
   } catch (error) {
     console.log("AT-16 FAILED:", error.message);
     process.exitCode = 1;
+
   } finally {
     await driver.quit();
   }

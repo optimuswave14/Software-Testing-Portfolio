@@ -1,57 +1,14 @@
 
-const { Builder, By, until } = require("selenium-webdriver");
+const { Builder } = require("selenium-webdriver");
 const assert = require("assert");
 
-async function addTransaction(driver, title, amount, type) {
-  // Navigate to Expenses
-  await driver.findElement(
-    By.xpath("//*[self::button or self::a][normalize-space()='Expenses']")
-  ).click();
-
-  await driver.wait(
-    until.elementLocated(By.name("title")),
-    10000
-  );
-
-  // Enter transaction details
-  await driver.findElement(By.name("title")).sendKeys(title);
-  await driver.findElement(By.name("amount")).sendKeys(amount);
-  await driver.findElement(By.name("category")).sendKeys("Food");
-  await driver.findElement(By.name("type")).sendKeys(type);
-
-  // Submit transaction
-  await driver.findElement(
-    By.css("form.panel button.primary")
-  ).click();
-
-  // Verify transaction was added
-  await driver.wait(
-    until.elementLocated(
-      By.xpath(`//td[normalize-space()='${title}']`)
-    ),
-    10000
-  );
-}
-
-async function getBudgetSpending(driver, month) {
-  const card = await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        `//article[.//strong[normalize-space()='Food · ${month}']]`
-      )
-    ),
-    10000
-  );
-
-  const text = await card.getText();
-
-  // Extract the amount shown before "spent of"
-  const match = text.match(/([\d,]+(?:\.\d{1,2})?)\s*spent of/);
-
-  assert.ok(match, "Could not read budget spending amount");
-
-  return Number(match[1].replace(/,/g, ""));
-}
+const {
+  addTransaction,
+  openBudgetsPage,
+  getBudgetMonth,
+  saveMonthlyBudget,
+  getBudgetSpending
+} = require("./helpers/test-helpers");
 
 async function testExcludeIncome() {
   const driver = await new Builder().forBrowser("chrome").build();
@@ -61,72 +18,42 @@ async function testExcludeIncome() {
     console.log("Finance Tracker opened");
 
     // Open Budgets
-    await driver.findElement(
-      By.xpath("//*[self::button or self::a][normalize-space()='Budgets']")
-    ).click();
+    await openBudgetsPage(driver);
 
-    await driver.wait(
-      until.elementLocated(
-        By.xpath("//h2[normalize-space()='Monthly Budgets']")
-      ),
-      10000
-    );
-
-    // Get the current month
-    const monthField = await driver.findElement(
-      By.xpath("//label[contains(.,'Month')]/input")
-    );
-
-    const month = await monthField.getAttribute("value");
+    const month = await getBudgetMonth(driver);
 
     // Create a new Food budget
-    await driver.findElement(
-      By.xpath("//label[contains(.,'Category')]/select")
-    ).sendKeys("Food");
-
-    const limit = await driver.findElement(
-      By.xpath("//label[contains(.,'Budget limit')]/input")
-    );
-
-    await limit.clear();
-    await limit.sendKeys("100000");
-
-    await driver.findElement(
-      By.xpath("//button[normalize-space()='Save budget']")
-    ).click();
-
-    // Verify budget appears
-    await driver.wait(
-      until.elementLocated(
-        By.xpath(
-          `//article[.//strong[normalize-space()='Food · ${month}']]`
-        )
-      ),
-      10000
-    );
+    await saveMonthlyBudget(driver, "Food", "100000");
 
     // Read spending before adding income
-    const spendingBefore = await getBudgetSpending(driver, month);
+    const spendingBefore = await getBudgetSpending(
+      driver,
+      "Food",
+      month
+    );
 
     console.log("Spending before income:", spendingBefore);
 
     // Add income of ₹3000
-    await addTransaction(
-      driver,
-      "AT14 Income Exclusion Test",
-      "3000",
-      "Income"
-    );
+    await addTransaction(driver, {
+      title: "AT14 Income Exclusion Test",
+      amount: "3000",
+      category: "Food",
+      type: "Income",
+      notes: "Testing income exclusion from budget"
+    });
 
     console.log("Income transaction added");
 
     // Navigate back to Budgets
-    await driver.findElement(
-      By.xpath("//*[self::button or self::a][normalize-space()='Budgets']")
-    ).click();
+    await openBudgetsPage(driver);
 
     // Read spending after adding income
-    const spendingAfter = await getBudgetSpending(driver, month);
+    const spendingAfter = await getBudgetSpending(
+      driver,
+      "Food",
+      month
+    );
 
     console.log("Spending after income:", spendingAfter);
 
