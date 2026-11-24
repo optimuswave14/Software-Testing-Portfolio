@@ -1,0 +1,692 @@
+{
+  "info": {
+    "_postman_id": "26ac1fa6-847b-4bb9-baa3-be8c08687fbd",
+    "name": "Finance Tracker API Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "60406591",
+    "_collection_link": "https://go.postman.co/collection/60406591-26ac1fa6-847b-4bb9-baa3-be8c08687fbd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01_Health_Check",
+      "item": [
+        {
+          "name": "API-01 - Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"API status is OK\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.status).to.eql(\"ok\");\r\n});\r\n\r\npm.test(\"API message is correct\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.message).to.eql(\r\n        \"Finance Tracker API is running\"\r\n    );\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02_Expense_API",
+      "item": [
+        {
+          "name": "API-02 - Get All Expenses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    pm.expect(pm.response.json()).to.be.an(\"array\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/expenses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-03 - Add Valid Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Expense created successfully\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"Expense has a generated ID\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.id).to.exist;\r\n});\r\n\r\npm.test(\"Expense amount is correct\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.amount).to.eql(500);\r\n});\r\n// Save generated expense ID\r\nconst response = pm.response.json();\r\n\r\nif (pm.response.code === 201 && response.id) {\r\n    pm.collectionVariables.set(\"expenseId\", response.id);\r\n    console.log(\"Expense ID saved:\", response.id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Postman Testing Expense\",\r\n  \"amount\": 500,\r\n  \"category\": \"Food\",\r\n  \"date\": \"2026-11-25\",\r\n  \"type\": \"expense\",\r\n  \"notes\": \"Created during API testing\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/expenses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-04 - Invalid Expense Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Invalid amount is rejected\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Correct validation message\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.message).to.eql(\r\n        \"Title, a positive amount and date are required.\"\r\n    );\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Invalid Expense\",\r\n  \"amount\": -100,\r\n  \"category\": \"Food\",\r\n  \"date\": \"2026-11-25\",\r\n  \"type\": \"expense\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/expenses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-05 - Update Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Expense updated successfully\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Updated amount is correct\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.amount).to.eql(750);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": 750,\r\n  \"notes\": \"Updated using Postman\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/expenses/{{expenseId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses",
+                "{{expenseId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-06 - Delete Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Expense deleted successfully\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Correct deletion message\", function () {\r\n    const response = pm.response.json();\r\n    pm.expect(response.message).to.eql(\r\n        \"Transaction deleted.\"\r\n    );\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/expenses/{{expenseId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses",
+                "{{expenseId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-16: Update Nonexistent Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Nonexistent expense update returns 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Correct error message\", function () {\r\n    pm.expect(pm.response.json().message)\r\n        .to.eql(\"Transaction not found.\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": 500\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/expenses/invalid-id",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses",
+                "invalid-id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-17: Delete Nonexistent Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Nonexistent expense deletion returns 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Correct error message\", function () {\r\n    pm.expect(pm.response.json().message)\r\n        .to.eql(\"Transaction not found.\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/expenses/invalid-id",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses",
+                "invalid-id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-18: Missing Required Expense Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Missing expense fields return 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Correct validation error is returned\", function () {\r\n    pm.expect(pm.response.json().message)\r\n        .to.eql(\"Title, a positive amount and date are required.\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"category\": \"Food\",\r\n  \"type\": \"expense\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/expenses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "expenses"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03_Budget_API",
+      "item": [
+        {
+          "name": "API-07 - Get All Budgets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response is an array\", function () {\r\n    pm.expect(pm.response.json()).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Each budget has required fields\", function () {\r\n    const budgets = pm.response.json();\r\n\r\n    budgets.forEach(function (budget) {\r\n        pm.expect(budget).to.have.property(\"id\");\r\n        pm.expect(budget).to.have.property(\"category\");\r\n        pm.expect(budget).to.have.property(\"limit\");\r\n        pm.expect(budget).to.have.property(\"month\");\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/budgets",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-08: Add a valid budget",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save generated budget ID\r\nconst response = pm.response.json();\r\n\r\nif (pm.response.code === 201 && response.id) {\r\n    pm.collectionVariables.set(\"budgetId\", response.id);\r\n    console.log(\"Budget ID saved:\", response.id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"category\": \"Food\",\r\n  \"limit\": 5000,\r\n  \"month\": \"2026-11\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/budgets",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-09: Invalid budget limit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"category\": \"Food\",\r\n  \"limit\": -500,\r\n  \"month\": \"2026-11\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/budgets",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-10: Replace an existing budget",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"category\": \"Food\",\r\n  \"limit\": 7000,\r\n  \"month\": \"2026-11\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/budgets",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-11: Delete budget",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/budgets/{{budgetId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets",
+                "{{budgetId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-12: Delete nonexistent budget",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/budgets/invalid-id",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets",
+                "invalid-id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-19: Missing Required Budget Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Missing budget fields return 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Correct validation message\", function () {\r\n    pm.expect(pm.response.json().message)\r\n        .to.eql(\"Category, positive limit and month (YYYY-MM) are required.\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"category\": \"Food\",\r\n  \"limit\": 5000\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/budgets",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04_Reports_API",
+      "item": [
+        {
+          "name": "API-13: Generate monthly report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Monthly report generated\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Report contains required fields\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response).to.have.property(\"month\");\r\n    pm.expect(response).to.have.property(\"income\");\r\n    pm.expect(response).to.have.property(\"expenses\");\r\n    pm.expect(response).to.have.property(\"balance\");\r\n    pm.expect(response).to.have.property(\"byCategory\");\r\n    pm.expect(response).to.have.property(\"transactions\");\r\n});\r\n\r\npm.test(\"Balance calculation is correct\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response.balance).to.eql(\r\n        response.income - response.expenses\r\n    );\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/reports/monthly?month=2026-11",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "reports",
+                "monthly"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "2026-11"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-14: Generate report for another month",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/reports/monthly?month=2026-10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "reports",
+                "monthly"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "2026-10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API-15: Verify report transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05_Error_Handling",
+      "item": [
+        {
+          "name": "API-20: Invalid API Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Invalid endpoint returns 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/invalid",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "invalid"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "expenseId",
+      "value": ""
+    },
+    {
+      "key": "budgetId",
+      "value": ""
+    }
+  ]
+}
